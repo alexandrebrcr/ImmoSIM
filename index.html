@@ -3,97 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comparateur Achat vs Location | Patrimoine</title>
+    <title>Simulateur Immo Expert | Le Mans</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .no-wrap { white-space: nowrap; }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased p-4 md:p-8">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased p-2 md:p-8">
 
-    <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
+    <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col lg:flex-row">
         
-        <div class="w-full md:w-1/3 bg-slate-900 text-white p-6 md:p-8 overflow-y-auto">
-            <h2 class="text-2xl font-bold mb-6 text-blue-400">Paramètres</h2>
+        <div class="w-full lg:w-80 bg-slate-900 text-white p-6 overflow-y-auto">
+            <h2 class="text-xl font-bold mb-6 text-blue-400">Paramètres</h2>
             
             <div class="space-y-4">
-                <h3 class="text-lg font-semibold border-b border-slate-700 pb-2">Projet d'Achat</h3>
-                <div>
-                    <label class="block text-sm text-slate-400">Prix du bien (€)</label>
-                    <input type="number" id="prixBien" value="180000" class="w-full mt-1 bg-slate-800 text-white rounded p-2 border border-slate-700 focus:border-blue-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm text-slate-400">Frais de notaire + divers (€)</label>
-                    <input type="number" id="fraisNotaire" value="13500" class="w-full mt-1 bg-slate-800 text-white rounded p-2 border border-slate-700 focus:border-blue-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm text-slate-400">Apport personnel (€)</label>
-                    <input type="number" id="apport" value="40000" class="w-full mt-1 bg-slate-800 text-white rounded p-2 border border-slate-700 focus:border-blue-500 focus:outline-none">
-                </div>
-                <div class="flex gap-4">
-                    <div class="w-1/2">
-                        <label class="block text-sm text-slate-400">Taux prêt (%)</label>
-                        <input type="number" id="tauxPret" value="3.65" step="0.01" class="w-full mt-1 bg-slate-800 text-white rounded p-2 border border-slate-700 focus:border-blue-500 focus:outline-none">
+                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 border-b border-slate-700 pb-1">Achat</h3>
+                <div class="grid grid-cols-1 gap-3 text-xs">
+                    <div>
+                        <label class="text-slate-400">Prix du bien (€)</label>
+                        <input type="number" id="prixBien" value="145000" class="w-full bg-slate-800 rounded p-2 mt-1 focus:outline-none focus:ring-1 focus:ring-blue-500">
                     </div>
-                    <div class="w-1/2">
-                        <label class="block text-sm text-slate-400">Durée (années)</label>
-                        <input type="number" id="dureePret" value="25" class="w-full mt-1 bg-slate-800 text-white rounded p-2 border border-slate-700 focus:border-blue-500 focus:outline-none">
+                    <div>
+                        <label class="text-slate-400">Apport (€)</label>
+                        <input type="number" id="apport" value="40000" class="w-full bg-slate-800 rounded p-2 mt-1 focus:outline-none focus:ring-1 focus:ring-blue-500">
                     </div>
-                </div>
-                <div>
-                    <label class="block text-sm text-slate-400">Taxe foncière + Entretien annuel (€)</label>
-                    <input type="number" id="fraisAnnuelsProprio" value="2400" class="w-full mt-1 bg-slate-800 text-white rounded p-2 border border-slate-700 focus:border-blue-500 focus:outline-none">
+                    <div class="flex gap-2">
+                        <div class="w-1/2">
+                            <label class="text-slate-400">Taux (%)</label>
+                            <input type="number" id="tauxPret" value="3.65" step="0.01" class="w-full bg-slate-800 rounded p-2 mt-1">
+                        </div>
+                        <div class="w-1/2">
+                            <label class="text-slate-400">Durée (ans)</label>
+                            <input type="number" id="dureePret" value="25" class="w-full bg-slate-800 rounded p-2 mt-1">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-slate-400">Appréciation Bien (%/an)</label>
+                        <input type="number" id="appreciationImmo" value="1.5" step="0.1" class="w-full bg-slate-800 rounded p-2 mt-1 text-emerald-400">
+                    </div>
                 </div>
 
-                <h3 class="text-lg font-semibold border-b border-slate-700 pb-2 mt-6">Projet de Location</h3>
-                <div>
-                    <label class="block text-sm text-slate-400">Loyer mensuel équivalent (€)</label>
-                    <input type="number" id="loyer" value="950" class="w-full mt-1 bg-slate-800 text-white rounded p-2 border border-slate-700 focus:border-blue-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-sm text-slate-400">Rendement de l'épargne net (%)</label>
-                    <input type="number" id="rendementEpargne" value="4.5" step="0.1" class="w-full mt-1 bg-slate-800 text-white rounded p-2 border border-slate-700 focus:border-blue-500 focus:outline-none">
+                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 border-b border-slate-700 pb-1 mt-6">Location</h3>
+                <div class="grid grid-cols-1 gap-3 text-xs">
+                    <div>
+                        <label class="text-slate-400">Loyer initial (€)</label>
+                        <input type="number" id="loyer" value="750" class="w-full bg-slate-800 rounded p-2 mt-1">
+                    </div>
+                    <div>
+                        <label class="text-slate-400">Inflation Loyers (%/an)</label>
+                        <input type="number" id="inflationLoyers" value="2.0" step="0.1" class="w-full bg-slate-800 rounded p-2 mt-1 text-orange-400">
+                    </div>
+                    <div>
+                        <label class="text-slate-400">Rendement Épargne (%/an)</label>
+                        <input type="number" id="rendementEpargne" value="4.5" step="0.1" class="w-full bg-slate-800 rounded p-2 mt-1 text-blue-400">
+                    </div>
                 </div>
 
-                <h3 class="text-lg font-semibold border-b border-slate-700 pb-2 mt-6">Durée de simulation</h3>
+                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 border-b border-slate-700 pb-1 mt-6">Simulation</h3>
                 <div>
-                    <label class="block text-sm text-slate-400">Années de comparaison</label>
-                    <input type="number" id="anneesSimulation" value="10" class="w-full mt-1 bg-slate-800 text-white rounded p-2 border border-slate-700 focus:border-blue-500 focus:outline-none">
+                    <label class="text-xs text-slate-400">Années de comparaison</label>
+                    <input type="number" id="anneesSimulation" value="25" class="w-full bg-slate-800 rounded p-2 mt-1 text-xs">
                 </div>
             </div>
         </div>
 
-        <div class="w-full md:w-2/3 p-6 md:p-8 flex flex-col">
-            <h1 class="text-3xl font-extrabold text-slate-900 mb-2">Analyse de Rentabilité</h1>
-            <p class="text-slate-500 mb-8">Comparaison de la constitution du patrimoine (sans revente).</p>
+        <div class="flex-1 p-6 md:p-10 flex flex-col">
+            <h1 class="text-3xl font-black text-slate-900 mb-6 uppercase">Analyse de Rentabilité</h1>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div class="bg-blue-50 p-5 rounded-xl border border-blue-100">
-                    <h4 class="text-blue-800 font-bold mb-3">Coût Mensuel Réel</h4>
-                    <div class="flex justify-between mb-1">
-                        <span class="text-slate-600">Propriétaire (Prêt + Frais)</span>
-                        <span id="coutMensuelProprio" class="font-semibold text-slate-900">0 €</span>
-                    </div>
-                    <div class="flex justify-between mb-1">
-                        <span class="text-slate-600">Locataire (Loyer)</span>
-                        <span id="coutMensuelLocataire" class="font-semibold text-slate-900">0 €</span>
-                    </div>
-                    <div class="mt-3 pt-3 border-t border-blue-200 text-sm text-blue-700 font-medium" id="phraseEpargne">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100 flex flex-col justify-between">
+                    <div>
+                        <h4 class="text-blue-900 font-bold text-sm uppercase tracking-wide mb-4">Coût Mensuel (Année 1)</h4>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-slate-600">Propriétaire</span>
+                            <span id="coutMensuelProprio" class="font-bold text-slate-900 text-lg no-wrap">0 €</span>
                         </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-600">Locataire</span>
+                            <span id="coutMensuelLocataire" class="font-bold text-slate-900 text-lg no-wrap">0 €</span>
+                        </div>
+                    </div>
+                    <p id="phraseEpargne" class="mt-4 text-xs text-blue-700 leading-relaxed italic border-t border-blue-200 pt-3"></p>
                 </div>
 
-                <div class="bg-slate-100 p-5 rounded-xl border border-slate-200">
-                    <h4 class="text-slate-800 font-bold mb-3">Patrimoine brut à la fin</h4>
-                    <div class="flex justify-between mb-1">
-                        <span class="text-slate-600">Achat (Capital amorti + Apport)</span>
-                        <span id="patrimoineAchat" class="font-bold text-emerald-600 text-lg">0 €</span>
+                <div class="bg-slate-900 p-6 rounded-2xl text-white shadow-xl flex flex-col justify-between">
+                    <div>
+                        <h4 class="text-slate-400 font-bold text-sm uppercase tracking-wide mb-4">Patrimoine brut final</h4>
+                        <div class="flex justify-between items-end mb-3">
+                            <span class="text-slate-300 text-sm">Achat</span>
+                            <span id="patrimoineAchat" class="font-black text-emerald-400 text-2xl no-wrap">0 €</span>
+                        </div>
+                        <div class="flex justify-between items-end mb-4">
+                            <span class="text-slate-300 text-sm">Location</span>
+                            <span id="patrimoineLocation" class="font-black text-blue-400 text-2xl no-wrap">0 €</span>
+                        </div>
                     </div>
-                    <div class="flex justify-between mb-1">
-                        <span class="text-slate-600">Location (Épargne cumulée)</span>
-                        <span id="patrimoineLocation" class="font-bold text-blue-600 text-lg">0 €</span>
+                    <div class="bg-white/10 rounded-lg p-3 text-center">
+                        <span id="ecartPourcentage" class="text-sm font-bold"></span>
                     </div>
                 </div>
             </div>
 
-            <div class="flex-grow relative h-64 w-full">
+            <div class="flex-grow min-h-[350px]">
                 <canvas id="patrimoineChart"></canvas>
             </div>
         </div>
@@ -101,161 +113,129 @@
 
     <script>
         let myChart = null;
-    
+
         function calculer() {
-            const prixBien = parseFloat(document.getElementById('prixBien').value);
-            const fraisNotaire = parseFloat(document.getElementById('fraisNotaire').value);
+            // Inputs
+            const prixBienBase = parseFloat(document.getElementById('prixBien').value);
             const apport = parseFloat(document.getElementById('apport').value);
             const tauxPret = parseFloat(document.getElementById('tauxPret').value) / 100;
             const dureePret = parseInt(document.getElementById('dureePret').value);
-            const fraisAnnuelsProprio = parseFloat(document.getElementById('fraisAnnuelsProprio').value);
+            const appreciationImmo = parseFloat(document.getElementById('appreciationImmo').value) / 100;
             
-            const loyer = parseFloat(document.getElementById('loyer').value);
+            const loyerBase = parseFloat(document.getElementById('loyer').value);
+            const inflationLoyers = parseFloat(document.getElementById('inflationLoyers').value) / 100;
             const rendementEpargne = parseFloat(document.getElementById('rendementEpargne').value) / 100;
             const anneesSimulation = parseInt(document.getElementById('anneesSimulation').value);
-    
-            const montantEmprunte = (prixBien + fraisNotaire) - apport;
+
+            // Hypothèses fixes
+            const fraisNotaire = prixBienBase * 0.08;
+            const fraisAnnuelsProprioBase = 2000; // Taxe foncière + charges
+
+            // Calcul Prêt
+            const montantEmprunte = (prixBienBase + fraisNotaire) - apport;
             const tauxMensuel = tauxPret / 12;
-            
-            let mensualitePret = 0;
-            if (tauxPret > 0) {
-                mensualitePret = montantEmprunte * (tauxMensuel * Math.pow(1 + tauxMensuel, dureePret * 12)) / (Math.pow(1 + tauxMensuel, dureePret * 12) - 1);
-            } else {
-                mensualitePret = montantEmprunte / (dureePret * 12);
-            }
-    
-            const coutMensuelProprioInitial = mensualitePret + (fraisAnnuelsProprio / 12);
-            
-            document.getElementById('coutMensuelProprio').textContent = Math.round(coutMensuelProprioInitial).toLocaleString('fr-FR') + ' €';
-            document.getElementById('coutMensuelLocataire').textContent = loyer.toLocaleString('fr-FR') + ' €';
-    
+            const nbMoisPret = dureePret * 12;
+            let mensPret = (tauxPret > 0) ? (montantEmprunte * tauxMensuel) / (1 - Math.pow(1 + tauxMensuel, -nbMoisPret)) : montantEmprunte / nbMoisPret;
+
+            // Stats Année 1
+            document.getElementById('coutMensuelProprio').textContent = Math.round(mensPret + (fraisAnnuelsProprioBase/12)).toLocaleString() + ' €';
+            document.getElementById('coutMensuelLocataire').textContent = Math.round(loyerBase).toLocaleString() + ' €';
+
+            // Boucle de simulation
             const labels = [];
             const dataAchat = [];
             const dataLocation = [];
-    
+
             let capitalRestantDu = montantEmprunte;
-            let epargneLocataire = apport; // Le locataire garde l'apport
-            let epargneProprio = 0; // Le propriétaire a injecté l'apport dans l'achat
-            
-            let moisEcoules = 0;
-    
+            let epargneLocataire = apport; 
+            let epargneProprio = 0;
+            let valeurBienActuelle = prixBienBase;
+            let loyerActuel = loyerBase;
+            let fraisProprioActuel = fraisAnnuelsProprioBase / 12;
+
             for (let annee = 0; annee <= anneesSimulation; annee++) {
-                labels.push('Année ' + annee);
-    
+                labels.push('An ' + annee);
+
                 if (annee === 0) {
-                    // Année 0 : Perte sèche des frais de notaire pour le propriétaire
-                    dataAchat.push(Math.round(prixBien - montantEmprunte)); 
-                    dataLocation.push(Math.round(apport));
+                    dataAchat.push(prixBienBase - montantEmprunte);
+                    dataLocation.push(apport);
                     continue;
                 }
-    
-                for (let mois = 1; mois <= 12; mois++) {
-                    moisEcoules++;
-    
-                    let coutProprio = fraisAnnuelsProprio / 12;
-                    if (moisEcoules <= dureePret * 12) {
-                        coutProprio += mensualitePret;
-                        
-                        let interetsMois = capitalRestantDu * tauxMensuel;
-                        let amortissementMois = mensualitePret - interetsMois;
-                        capitalRestantDu -= amortissementMois;
+
+                // Simulation mois par mois
+                for (let m = 1; m <= 12; m++) {
+                    // 1. Inflation et Appréciation (mensualisée)
+                    valeurBienActuelle *= (1 + appreciationImmo/12);
+                    loyerActuel *= (1 + inflationLoyers/12);
+                    fraisProprioActuel *= (1 + inflationLoyers/12); // Les charges montent aussi
+
+                    // 2. Coûts du mois
+                    let coutP = fraisProprioActuel;
+                    if ( (annee-1)*12 + m <= nbMoisPret ) {
+                        coutP += mensPret;
+                        let interets = capitalRestantDu * tauxMensuel;
+                        capitalRestantDu -= (mensPret - interets);
                     }
-    
-                    let coutLocataire = loyer;
-    
+
+                    // 3. Épargne
                     epargneLocataire *= (1 + rendementEpargne/12);
                     epargneProprio *= (1 + rendementEpargne/12);
-    
-                    // Analyse de trésorerie mensuelle
-                    if (coutProprio > coutLocataire) {
-                        epargneLocataire += (coutProprio - coutLocataire);
-                    } else if (coutLocataire > coutProprio) {
-                        epargneProprio += (coutLocataire - coutProprio);
+
+                    if (coutP > loyerActuel) {
+                        epargneLocataire += (coutP - loyerActuel);
+                    } else {
+                        epargneProprio += (loyerActuel - coutP);
                     }
                 }
-    
-                // Patrimoine = Valeur Bien - Dette + Cash
-                let patrimoineAchat = prixBien - Math.max(0, capitalRestantDu) + epargneProprio;
-                
-                dataAchat.push(Math.round(patrimoineAchat));
+
+                dataAchat.push(Math.round(valeurBienActuelle - Math.max(0, capitalRestantDu) + epargneProprio));
                 dataLocation.push(Math.round(epargneLocataire));
             }
-    
-            document.getElementById('patrimoineAchat').textContent = dataAchat[dataAchat.length - 1].toLocaleString('fr-FR') + ' €';
-            document.getElementById('patrimoineLocation').textContent = dataLocation[dataLocation.length - 1].toLocaleString('fr-FR') + ' €';
-            
-            const phraseEpargne = document.getElementById('phraseEpargne');
-            if (coutMensuelProprioInitial > loyer) {
-                phraseEpargne.textContent = `Phase de prêt : le locataire place ${Math.round(coutMensuelProprioInitial - loyer)} €/mois. Après le prêt : le propriétaire place ${Math.round(loyer - (fraisAnnuelsProprio/12))} €/mois.`;
-            } else {
-                phraseEpargne.textContent = `Le propriétaire place ${Math.round(loyer - coutMensuelProprioInitial)} €/mois pendant le prêt, puis ${Math.round(loyer - (fraisAnnuelsProprio/12))} €/mois ensuite.`;
-            }
-    
+
+            // Affichage Final
+            const finalAchat = dataAchat[dataAchat.length - 1];
+            const finalLoc = dataLocation[dataLocation.length - 1];
+            document.getElementById('patrimoineAchat').textContent = finalAchat.toLocaleString() + ' €';
+            document.getElementById('patrimoineLocation').textContent = finalLoc.toLocaleString() + ' €';
+
+            // Calcul %
+            const diff = finalAchat - finalLoc;
+            const pct = (diff / finalLoc) * 100;
+            const indicator = document.getElementById('ecartPourcentage');
+            indicator.textContent = (pct >= 0) ? `+${pct.toFixed(1)}% en faveur de l'achat` : `${pct.toFixed(1)}% en faveur de la location`;
+            indicator.className = (pct >= 0) ? "text-emerald-400 font-bold" : "text-orange-400 font-bold";
+
+            document.getElementById('phraseEpargne').innerHTML = `L'inflation des loyers (${(inflationLoyers*100).toFixed(1)}%) et l'appréciation du bien (${(appreciationImmo*100).toFixed(1)}%) sont incluses dans le calcul mois par mois.`;
+
             updateChart(labels, dataAchat, dataLocation);
         }
-    
+
         function updateChart(labels, dataAchat, dataLocation) {
             const ctx = document.getElementById('patrimoineChart').getContext('2d');
             if (myChart) myChart.destroy();
-    
             myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
-                        {
-                            label: 'Patrimoine Propriétaire (€)',
-                            data: dataAchat,
-                            borderColor: '#059669',
-                            backgroundColor: 'rgba(5, 150, 105, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.3
-                        },
-                        {
-                            label: 'Patrimoine Locataire (€)',
-                            data: dataLocation,
-                            borderColor: '#2563eb',
-                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                            borderWidth: 3,
-                            fill: true,
-                            tension: 0.3
-                        }
+                        { label: 'Achat', data: dataAchat, borderColor: '#10b981', borderWidth: 4, pointRadius: 0, tension: 0.3, fill: false },
+                        { label: 'Location', data: dataLocation, borderColor: '#3b82f6', borderWidth: 4, pointRadius: 0, tension: 0.3, fill: false }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        legend: { position: 'top' },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.dataset.label + ': ' + context.parsed.y.toLocaleString('fr-FR') + ' €';
-                                }
-                            }
-                        }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
-                        y: {
-                            beginAtZero: false,
-                            ticks: {
-                                callback: function(value) { return value.toLocaleString('fr-FR') + ' €'; }
-                            }
-                        }
+                        y: { grid: { color: '#f1f5f9' }, ticks: { callback: v => v.toLocaleString() + ' €' } },
+                        x: { grid: { display: false } }
                     }
                 }
             });
         }
-    
-        document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('input', calculer);
-        });
-    
+
+        document.querySelectorAll('input').forEach(i => i.addEventListener('input', calculer));
         calculer();
     </script>
-    
 </body>
-  </html>
-  
+</html>
