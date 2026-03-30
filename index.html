@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparateur Achat vs Location | Patrimoine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row">
+        
+        <div class="w-full md:w-1/3 bg-slate-900 text-white p-6 md:p-8 overflow-y-auto">
+            <h2 class="text-2xl font-bold mb-6 text-blue-400">Paramètres</h2>
+            
+            <div class="space-y-4">
+                <h3 class="text-lg font-semibold border-b border-slate-700 pb-2">Projet d'Achat</h3>
+                <div>
+                    <label class="block text-sm text-slate-400">Prix du bien (€)</label>
+                    <input type="number" id="prixBien" value="180000" class="w-full mt-1 bg-slate-800 text-white rounded p-2 border border-slate-700 focus:border-blue-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400">Frais de notaire + divers (€)</label>
+                    <input type="number" id="fraisNotaire" value="13500" class="w-full mt-1 bg-slate-800 text-white rounded p-2 border border-slate-700 focus:border-blue-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400">Apport personnel (€)</label>
+                    <input type="number" id="apport" value="40000" class="w-full mt-1 bg-slate-800 text-white rounded p-2 border border-slate-700 focus:border-blue-500 focus:outline-none">
+                </div>
+                <div class="flex gap-4">
+                    <div class="w-1/2">
+                        <label class="block text-sm text-slate-400">Taux prêt (%)</label>
+                        <input type="number" id="tauxPret" value="3.65" step="0.01" class="w-full mt-1 bg-slate-800 text-white rounded p-2 border border-slate-700 focus:border-blue-500 focus:outline-none">
+                    </div>
+                    <div class="w-1/2">
+                        <label class="block text-sm text-slate-400">Durée (années)</label>
+                        <input type="number" id="dureePret" value="25" class="w-full mt-1 bg-slate-800 text-white rounded p-2 border border-slate-700 focus:border-blue-500 focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400">Taxe foncière + Entretien annuel (€)</label>
+                    <input type="number" id="fraisAnnuelsProprio" value="2400" class="w-full mt-1 bg-slate-800 text-white rounded p-2 border border-slate-700 focus:border-blue-500 focus:outline-none">
+                </div>
+
+                <h3 class="text-lg font-semibold border-b border-slate-700 pb-2 mt-6">Projet de Location</h3>
+                <div>
+                    <label class="block text-sm text-slate-400">Loyer mensuel équivalent (€)</label>
+                    <input type="number" id="loyer" value="950" class="w-full mt-1 bg-slate-800 text-white rounded p-2 border border-slate-700 focus:border-blue-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm text-slate-400">Rendement de l'épargne net (%)</label>
+                    <input type="number" id="rendementEpargne" value="4.5" step="0.1" class="w-full mt-1 bg-slate-800 text-white rounded p-2 border border-slate-700 focus:border-blue-500 focus:outline-none">
+                </div>
+
+                <h3 class="text-lg font-semibold border-b border-slate-700 pb-2 mt-6">Durée de simulation</h3>
+                <div>
+                    <label class="block text-sm text-slate-400">Années de comparaison</label>
+                    <input type="number" id="anneesSimulation" value="10" class="w-full mt-1 bg-slate-800 text-white rounded p-2 border border-slate-700 focus:border-blue-500 focus:outline-none">
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full md:w-2/3 p-6 md:p-8 flex flex-col">
+            <h1 class="text-3xl font-extrabold text-slate-900 mb-2">Analyse de Rentabilité</h1>
+            <p class="text-slate-500 mb-8">Comparaison de la constitution du patrimoine (sans revente).</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-blue-50 p-5 rounded-xl border border-blue-100">
+                    <h4 class="text-blue-800 font-bold mb-3">Coût Mensuel Réel</h4>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-slate-600">Propriétaire (Prêt + Frais)</span>
+                        <span id="coutMensuelProprio" class="font-semibold text-slate-900">0 €</span>
+                    </div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-slate-600">Locataire (Loyer)</span>
+                        <span id="coutMensuelLocataire" class="font-semibold text-slate-900">0 €</span>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-blue-200 text-sm text-blue-700 font-medium" id="phraseEpargne">
+                        </div>
+                </div>
+
+                <div class="bg-slate-100 p-5 rounded-xl border border-slate-200">
+                    <h4 class="text-slate-800 font-bold mb-3">Patrimoine brut à la fin</h4>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-slate-600">Achat (Capital amorti + Apport)</span>
+                        <span id="patrimoineAchat" class="font-bold text-emerald-600 text-lg">0 €</span>
+                    </div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-slate-600">Location (Épargne cumulée)</span>
+                        <span id="patrimoineLocation" class="font-bold text-blue-600 text-lg">0 €</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-grow relative h-64 w-full">
+                <canvas id="patrimoineChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let myChart = null;
+
+        function calculer() {
+            // Récupération des valeurs
+            const prixBien = parseFloat(document.getElementById('prixBien').value);
+            const fraisNotaire = parseFloat(document.getElementById('fraisNotaire').value);
+            const apport = parseFloat(document.getElementById('apport').value);
+            const tauxPret = parseFloat(document.getElementById('tauxPret').value) / 100;
+            const dureePret = parseInt(document.getElementById('dureePret').value);
+            const fraisAnnuelsProprio = parseFloat(document.getElementById('fraisAnnuelsProprio').value);
+            
+            const loyer = parseFloat(document.getElementById('loyer').value);
+            const rendementEpargne = parseFloat(document.getElementById('rendementEpargne').value) / 100;
+            const anneesSimulation = parseInt(document.getElementById('anneesSimulation').value);
+
+            // Calculs Achat
+            const montantEmprunte = (prixBien + fraisNotaire) - apport;
+            const tauxMensuel = tauxPret / 12;
+            const nombreMoisTotal = dureePret * 12;
+            
+            let mensualitePret = 0;
+            if (tauxPret > 0) {
+                mensualitePret = montantEmprunte * (tauxMensuel * Math.pow(1 + tauxMensuel, nombreMoisTotal)) / (Math.pow(1 + tauxMensuel, nombreMoisTotal) - 1);
+            } else {
+                mensualitePret = montantEmprunte / nombreMoisTotal;
+            }
+
+            const coutMensuelProprio = mensualitePret + (fraisAnnuelsProprio / 12);
+            
+            // Calcul de la différence à épargner
+            const differenceMensuelle = coutMensuelProprio - loyer;
+            
+            // Mise à jour de l'UI mensuelle
+            document.getElementById('coutMensuelProprio').textContent = Math.round(coutMensuelProprio).toLocaleString('fr-FR') + ' €';
+            document.getElementById('coutMensuelLocataire').textContent = loyer.toLocaleString('fr-FR') + ' €';
+            
+            const phraseEpargne = document.getElementById('phraseEpargne');
+            if (differenceMensuelle > 0) {
+                phraseEpargne.textContent = `Le locataire place l'apport de ${apport.toLocaleString()} € + la différence de ${Math.round(differenceMensuelle)} € / mois à ${rendementEpargne * 100}%.`;
+            } else {
+                phraseEpargne.textContent = `Le propriétaire place la différence de ${Math.round(Math.abs(differenceMensuelle))} € / mois. Le locataire place l'apport de ${apport.toLocaleString()} €.`;
+            }
+
+            // Tableaux pour le graphique
+            const labels = [];
+            const dataAchat = [];
+            const dataLocation = [];
+
+            let capitalRestantDu = montantEmprunte;
+            let epargneLocataire = apport; // L'apport est investi au départ
+            let epargneProprio = apport; // Si l'achat coûte moins cher que le loyer
+
+            for (let annee = 0; annee <= anneesSimulation; annee++) {
+                labels.push('Année ' + annee);
+
+                if (annee === 0) {
+                    dataAchat.push(apport);
+                    dataLocation.push(apport);
+                    continue;
+                }
+
+                // Évolution annuelle Location
+                for (let mois = 1; mois <= 12; mois++) {
+                    epargneLocataire *= (1 + rendementEpargne/12);
+                    if (differenceMensuelle > 0) {
+                        epargneLocataire += differenceMensuelle; // Le locataire investit la différence
+                    }
+                }
+                dataLocation.push(Math.round(epargneLocataire));
+
+                // Évolution annuelle Achat
+                let interetsAnnee = 0;
+                let capitalAmortiAnnee = 0;
+
+                for (let mois = 1; mois <= 12; mois++) {
+                    if (capitalRestantDu > 0) {
+                        const interetsMois = capitalRestantDu * tauxMensuel;
+                        const amortissementMois = mensualitePret - interetsMois;
+                        capitalRestantDu -= amortissementMois;
+                        capitalAmortiAnnee += amortissementMois;
+                    }
+                    
+                    if (differenceMensuelle < 0) {
+                        // L'achat est moins cher, le proprio investit la différence
+                        epargneProprio *= (1 + rendementEpargne/12);
+                        epargneProprio += Math.abs(differenceMensuelle);
+                    }
+                }
+
+                // Patrimoine Achat = Capital remboursé + Apport initial (+ éventuelle épargne si mensualité < loyer)
+                const capitalTotalAmorti = montantEmprunte - Math.max(0, capitalRestantDu);
+                let patrimoineTotalAchat = capitalTotalAmorti + apport;
+                
+                if (differenceMensuelle < 0) {
+                    patrimoineTotalAchat += (epargneProprio - apport); // On ajoute les gains d'épargne
+                }
+
+                dataAchat.push(Math.round(patrimoineTotalAchat));
+            }
+
+            // Mise à jour de l'UI Patrimoine
+            document.getElementById('patrimoineAchat').textContent = dataAchat[dataAchat.length - 1].toLocaleString('fr-FR') + ' €';
+            document.getElementById('patrimoineLocation').textContent = dataLocation[dataLocation.length - 1].toLocaleString('fr-FR') + ' €';
+
+            // Mise à jour du graphique
+            updateChart(labels, dataAchat, dataLocation);
+        }
+
+        function updateChart(labels, dataAchat, dataLocation) {
+            const ctx = document.getElementById('patrimoineChart').getContext('2d');
+            
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Patrimoine Propriétaire (€)',
+                            data: dataAchat,
+                            borderColor: '#059669', // Emerald
+                            backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Patrimoine Locataire (€)',
+                            data: dataLocation,
+                            borderColor: '#2563eb', // Blue
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toLocaleString('fr-FR') + ' €';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString('fr-FR') + ' €';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Écouteurs d'événements pour recalculer à chaque modification
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', calculer);
+        });
+
+        // Calcul initial
+        calculer();
+    </script>
+</body>
+  </html>
+  
