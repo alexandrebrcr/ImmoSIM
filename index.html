@@ -101,9 +101,8 @@
 
     <script>
         let myChart = null;
-
+    
         function calculer() {
-            // Récupération des valeurs
             const prixBien = parseFloat(document.getElementById('prixBien').value);
             const fraisNotaire = parseFloat(document.getElementById('fraisNotaire').value);
             const apport = parseFloat(document.getElementById('apport').value);
@@ -114,107 +113,91 @@
             const loyer = parseFloat(document.getElementById('loyer').value);
             const rendementEpargne = parseFloat(document.getElementById('rendementEpargne').value) / 100;
             const anneesSimulation = parseInt(document.getElementById('anneesSimulation').value);
-
-            // Calculs Achat
+    
             const montantEmprunte = (prixBien + fraisNotaire) - apport;
             const tauxMensuel = tauxPret / 12;
-            const nombreMoisTotal = dureePret * 12;
             
             let mensualitePret = 0;
             if (tauxPret > 0) {
-                mensualitePret = montantEmprunte * (tauxMensuel * Math.pow(1 + tauxMensuel, nombreMoisTotal)) / (Math.pow(1 + tauxMensuel, nombreMoisTotal) - 1);
+                mensualitePret = montantEmprunte * (tauxMensuel * Math.pow(1 + tauxMensuel, dureePret * 12)) / (Math.pow(1 + tauxMensuel, dureePret * 12) - 1);
             } else {
-                mensualitePret = montantEmprunte / nombreMoisTotal;
+                mensualitePret = montantEmprunte / (dureePret * 12);
             }
-
-            const coutMensuelProprio = mensualitePret + (fraisAnnuelsProprio / 12);
+    
+            const coutMensuelProprioInitial = mensualitePret + (fraisAnnuelsProprio / 12);
             
-            // Calcul de la différence à épargner
-            const differenceMensuelle = coutMensuelProprio - loyer;
-            
-            // Mise à jour de l'UI mensuelle
-            document.getElementById('coutMensuelProprio').textContent = Math.round(coutMensuelProprio).toLocaleString('fr-FR') + ' €';
+            document.getElementById('coutMensuelProprio').textContent = Math.round(coutMensuelProprioInitial).toLocaleString('fr-FR') + ' €';
             document.getElementById('coutMensuelLocataire').textContent = loyer.toLocaleString('fr-FR') + ' €';
-            
-            const phraseEpargne = document.getElementById('phraseEpargne');
-            if (differenceMensuelle > 0) {
-                phraseEpargne.textContent = `Le locataire place l'apport de ${apport.toLocaleString()} € + la différence de ${Math.round(differenceMensuelle)} € / mois à ${rendementEpargne * 100}%.`;
-            } else {
-                phraseEpargne.textContent = `Le propriétaire place la différence de ${Math.round(Math.abs(differenceMensuelle))} € / mois. Le locataire place l'apport de ${apport.toLocaleString()} €.`;
-            }
-
-            // Tableaux pour le graphique
+    
             const labels = [];
             const dataAchat = [];
             const dataLocation = [];
-
+    
             let capitalRestantDu = montantEmprunte;
-            let epargneLocataire = apport; // L'apport est investi au départ
-            let epargneProprio = apport; // Si l'achat coûte moins cher que le loyer
-
+            let epargneLocataire = apport; // Le locataire garde l'apport
+            let epargneProprio = 0; // Le propriétaire a injecté l'apport dans l'achat
+            
+            let moisEcoules = 0;
+    
             for (let annee = 0; annee <= anneesSimulation; annee++) {
                 labels.push('Année ' + annee);
-
+    
                 if (annee === 0) {
-                    dataAchat.push(apport);
-                    dataLocation.push(apport);
+                    // Année 0 : Perte sèche des frais de notaire pour le propriétaire
+                    dataAchat.push(Math.round(prixBien - montantEmprunte)); 
+                    dataLocation.push(Math.round(apport));
                     continue;
                 }
-
-                // Évolution annuelle Location
+    
                 for (let mois = 1; mois <= 12; mois++) {
-                    epargneLocataire *= (1 + rendementEpargne/12);
-                    if (differenceMensuelle > 0) {
-                        epargneLocataire += differenceMensuelle; // Le locataire investit la différence
-                    }
-                }
-                dataLocation.push(Math.round(epargneLocataire));
-
-                // Évolution annuelle Achat
-                let interetsAnnee = 0;
-                let capitalAmortiAnnee = 0;
-
-                for (let mois = 1; mois <= 12; mois++) {
-                    if (capitalRestantDu > 0) {
-                        const interetsMois = capitalRestantDu * tauxMensuel;
-                        const amortissementMois = mensualitePret - interetsMois;
+                    moisEcoules++;
+    
+                    let coutProprio = fraisAnnuelsProprio / 12;
+                    if (moisEcoules <= dureePret * 12) {
+                        coutProprio += mensualitePret;
+                        
+                        let interetsMois = capitalRestantDu * tauxMensuel;
+                        let amortissementMois = mensualitePret - interetsMois;
                         capitalRestantDu -= amortissementMois;
-                        capitalAmortiAnnee += amortissementMois;
                     }
-                    
-                    if (differenceMensuelle < 0) {
-                        // L'achat est moins cher, le proprio investit la différence
-                        epargneProprio *= (1 + rendementEpargne/12);
-                        epargneProprio += Math.abs(differenceMensuelle);
+    
+                    let coutLocataire = loyer;
+    
+                    epargneLocataire *= (1 + rendementEpargne/12);
+                    epargneProprio *= (1 + rendementEpargne/12);
+    
+                    // Analyse de trésorerie mensuelle
+                    if (coutProprio > coutLocataire) {
+                        epargneLocataire += (coutProprio - coutLocataire);
+                    } else if (coutLocataire > coutProprio) {
+                        epargneProprio += (coutLocataire - coutProprio);
                     }
                 }
-
-                // Patrimoine Achat = Capital remboursé + Apport initial (+ éventuelle épargne si mensualité < loyer)
-                const capitalTotalAmorti = montantEmprunte - Math.max(0, capitalRestantDu);
-                let patrimoineTotalAchat = capitalTotalAmorti + apport;
+    
+                // Patrimoine = Valeur Bien - Dette + Cash
+                let patrimoineAchat = prixBien - Math.max(0, capitalRestantDu) + epargneProprio;
                 
-                if (differenceMensuelle < 0) {
-                    patrimoineTotalAchat += (epargneProprio - apport); // On ajoute les gains d'épargne
-                }
-
-                dataAchat.push(Math.round(patrimoineTotalAchat));
+                dataAchat.push(Math.round(patrimoineAchat));
+                dataLocation.push(Math.round(epargneLocataire));
             }
-
-            // Mise à jour de l'UI Patrimoine
+    
             document.getElementById('patrimoineAchat').textContent = dataAchat[dataAchat.length - 1].toLocaleString('fr-FR') + ' €';
             document.getElementById('patrimoineLocation').textContent = dataLocation[dataLocation.length - 1].toLocaleString('fr-FR') + ' €';
-
-            // Mise à jour du graphique
+            
+            const phraseEpargne = document.getElementById('phraseEpargne');
+            if (coutMensuelProprioInitial > loyer) {
+                phraseEpargne.textContent = `Phase de prêt : le locataire place ${Math.round(coutMensuelProprioInitial - loyer)} €/mois. Après le prêt : le propriétaire place ${Math.round(loyer - (fraisAnnuelsProprio/12))} €/mois.`;
+            } else {
+                phraseEpargne.textContent = `Le propriétaire place ${Math.round(loyer - coutMensuelProprioInitial)} €/mois pendant le prêt, puis ${Math.round(loyer - (fraisAnnuelsProprio/12))} €/mois ensuite.`;
+            }
+    
             updateChart(labels, dataAchat, dataLocation);
         }
-
+    
         function updateChart(labels, dataAchat, dataLocation) {
             const ctx = document.getElementById('patrimoineChart').getContext('2d');
-            
-            if (myChart) {
-                myChart.destroy();
-            }
-
+            if (myChart) myChart.destroy();
+    
             myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -223,7 +206,7 @@
                         {
                             label: 'Patrimoine Propriétaire (€)',
                             data: dataAchat,
-                            borderColor: '#059669', // Emerald
+                            borderColor: '#059669',
                             backgroundColor: 'rgba(5, 150, 105, 0.1)',
                             borderWidth: 3,
                             fill: true,
@@ -232,7 +215,7 @@
                         {
                             label: 'Patrimoine Locataire (€)',
                             data: dataLocation,
-                            borderColor: '#2563eb', // Blue
+                            borderColor: '#2563eb',
                             backgroundColor: 'rgba(37, 99, 235, 0.1)',
                             borderWidth: 3,
                             fill: true,
@@ -243,10 +226,7 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
-                    },
+                    interaction: { mode: 'index', intersect: false },
                     plugins: {
                         legend: { position: 'top' },
                         tooltip: {
@@ -261,24 +241,21 @@
                         y: {
                             beginAtZero: false,
                             ticks: {
-                                callback: function(value) {
-                                    return value.toLocaleString('fr-FR') + ' €';
-                                }
+                                callback: function(value) { return value.toLocaleString('fr-FR') + ' €'; }
                             }
                         }
                     }
                 }
             });
         }
-
-        // Écouteurs d'événements pour recalculer à chaque modification
+    
         document.querySelectorAll('input').forEach(input => {
             input.addEventListener('input', calculer);
         });
-
-        // Calcul initial
+    
         calculer();
     </script>
+    
 </body>
   </html>
   
