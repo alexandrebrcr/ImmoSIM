@@ -50,7 +50,7 @@
         .text-gold-gradient {
             background: linear-gradient(135deg, #fef08a 0%, #d4af37 50%, #ca8a04 100%);
             background-clip: text;
-            -webkit-background-clip: text;      
+            -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -645,6 +645,11 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    // Permet d'activer le survol vertical complet à n'importe quel point de l'axe X
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
                     plugins: { 
                         legend: { 
                             display: false 
@@ -660,6 +665,21 @@
                             callbacks: {
                                 label: function(context) {
                                     return ' ' + context.dataset.label.split(' ')[0] + ' : ' + context.parsed.y.toLocaleString('fr-FR') + ' €';
+                                },
+                                // Pied de bulle : calcule dynamiquement l'écart instantané
+                                footer: function(tooltipItems) {
+                                    if (tooltipItems.length === 2) {
+                                        let valAchat = 0;
+                                        let valLoc = 0;
+                                        tooltipItems.forEach(item => {
+                                            if (item.datasetIndex === 0) valAchat = item.parsed.y;
+                                            if (item.datasetIndex === 1) valLoc = item.parsed.y;
+                                        });
+                                        const diff = valAchat - valLoc;
+                                        const favor = diff >= 0 ? 'Achat' : 'Location';
+                                        return '\nÉcart : ' + (diff >= 0 ? '+' : '') + diff.toLocaleString('fr-FR') + ' € (Fav. ' + favor + ')';
+                                    }
+                                    return '';
                                 }
                             }
                         }
