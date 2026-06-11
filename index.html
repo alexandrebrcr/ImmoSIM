@@ -1,241 +1,683 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ImmoSIM - Comparateur Achat/Location</title>
+    <title>ImmoSIM - Comparateur Achat vs Location</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            50: '#fbf8eb',
+                            100: '#f4ebb9',
+                            200: '#eedf87',
+                            300: '#e7d151',
+                            400: '#e1c229',
+                            500: '#d4af37', /* True Metallic Gold */
+                            600: '#b08e27',
+                            700: '#8c6e1c',
+                            800: '#675013',
+                            950: '#1b1402',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Cabinet Grotesk', 'Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
     <style>
-        .no-wrap { white-space: nowrap; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+        
+        body {
+            background-color: #050506;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(212, 175, 55, 0.04) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(212, 175, 55, 0.03) 0%, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* Gold metallic text styling */
+        .text-gold-gradient {
+            background: linear-gradient(135deg, #fef08a 0%, #d4af37 50%, #ca8a04 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gold-border-glow {
+            box-shadow: 0 0 15px rgba(214, 175, 55, 0.1);
+            border: 1px solid rgba(214, 175, 55, 0.2);
+        }
+
+        .glass-card {
+            background: rgba(15, 15, 18, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Customize inputs appearance */
+        input[type="number"] {
+            color-scheme: dark;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #09090b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d4af37;
+            border-radius: 3px;
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased p-2 md:p-8">
+<body class="text-zinc-100 font-sans min-h-screen py-4 px-3 md:py-8 md:px-6">
 
-    <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col lg:flex-row">
-        
-        <div class="w-full lg:w-80 bg-slate-900 text-white p-6 overflow-y-auto">
-            <h2 class="text-xl font-bold mb-6 text-blue-400">Paramètres</h2>
-            
-            <div class="space-y-4">
-                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 border-b border-slate-700 pb-1">Achat</h3>
-                <div class="grid grid-cols-1 gap-3 text-xs">
-                    <div>
-                        <label class="text-slate-400">Prix du bien (€)</label>
-                        <input type="number" id="prixBien" value="145000" class="w-full bg-slate-800 rounded p-2 mt-1 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="text-slate-400">Apport (€)</label>
-                        <input type="number" id="apport" value="40000" class="w-full bg-slate-800 rounded p-2 mt-1 focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    </div>
-                    <div class="flex gap-2">
-                        <div class="w-1/2">
-                            <label class="text-slate-400">Taux (%)</label>
-                            <input type="number" id="tauxPret" value="3.65" step="0.01" class="w-full bg-slate-800 rounded p-2 mt-1">
-                        </div>
-                        <div class="w-1/2">
-                            <label class="text-slate-400">Durée (ans)</label>
-                            <input type="number" id="dureePret" value="25" class="w-full bg-slate-800 rounded p-2 mt-1">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-slate-400">Appréciation Bien (%/an)</label>
-                        <input type="number" id="appreciationImmo" value="1.5" step="0.1" class="w-full bg-slate-800 rounded p-2 mt-1 text-emerald-400">
-                    </div>
+    <div class="max-w-7xl mx-auto">
+        <!-- HEADER -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 px-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-gold-600 to-amber-300 flex items-center justify-center shadow-lg shadow-gold-500/20">
+                    <span class="text-zinc-950 font-black text-xl">I</span>
                 </div>
-
-                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 border-b border-slate-700 pb-1 mt-6">Location</h3>
-                <div class="grid grid-cols-1 gap-3 text-xs">
-                    <div>
-                        <label class="text-slate-400">Loyer initial (€)</label>
-                        <input type="number" id="loyer" value="750" class="w-full bg-slate-800 rounded p-2 mt-1">
-                    </div>
-                    <div>
-                        <label class="text-slate-400">Inflation Loyers (%/an)</label>
-                        <input type="number" id="inflationLoyers" value="2.0" step="0.1" class="w-full bg-slate-800 rounded p-2 mt-1 text-orange-400">
-                    </div>
-                    <div>
-                        <label class="text-slate-400">Rendement Épargne (%/an)</label>
-                        <input type="number" id="rendementEpargne" value="4.5" step="0.1" class="w-full bg-slate-800 rounded p-2 mt-1 text-blue-400">
-                    </div>
-                </div>
-
-                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 border-b border-slate-700 pb-1 mt-6">Simulation</h3>
                 <div>
-                    <label class="text-xs text-slate-400">Années de comparaison</label>
-                    <input type="number" id="anneesSimulation" value="25" class="w-full bg-slate-800 rounded p-2 mt-1 text-xs">
+                    <h1 class="text-2xl font-black tracking-wider uppercase text-gold-gradient">IMMOSIM</h1>
+                    <p class="text-xs text-zinc-500 tracking-tight">Outil d'aide à la décision financière & arbitrage immobilier</p>
                 </div>
             </div>
+            <div class="flex items-center gap-2 bg-zinc-900/60 border border-zinc-800 rounded-full px-4 py-1.5 text-xs">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-zinc-400">Calculateur d'arbitrage calibré avec fiscalité locale</span>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- SIDEBAR : PARAMETERS (4 cols) -->
+            <aside class="lg:col-span-4 space-y-6">
+                
+                <!-- SECTION ACHAT -->
+                <div class="glass-card rounded-2xl p-5 border-l-4 border-l-gold-500">
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-zinc-800">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-gold-400">Section Propriétaire</h3>
+                        <svg class="w-4 h-4 text-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    </div>
+                    
+                    <div class="space-y-4 text-xs">
+                        <div>
+                            <label class="text-zinc-400 block mb-1">Prix de vente du bien (€)</label>
+                            <input type="number" id="prixBien" value="220000" class="w-full bg-zinc-950/80 text-zinc-200 border border-zinc-800 rounded-lg p-2.5 focus:border-gold-500 focus:outline-none transition-colors font-medium">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-zinc-400 block mb-1">Apport (€)</label>
+                                <input type="number" id="apport" value="50000" class="w-full bg-zinc-950/80 text-zinc-200 border border-zinc-800 rounded-lg p-2.5 focus:border-gold-500 focus:outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="text-zinc-400 block mb-1">Notaire (%)</label>
+                                <select id="fraisNotairePct" class="w-full bg-zinc-950/80 text-zinc-200 border border-zinc-800 rounded-lg p-2.5 focus:border-gold-500 focus:outline-none font-medium">
+                                    <option value="2.5">Neuf (~2.5%)</option>
+                                    <option value="8.0" selected>Ancien (~8.0%)</option>
+                                    <option value="0">Aucun (0%)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-zinc-400 block mb-1">Taux emprunt (% d'intérêt)</label>
+                                <input type="number" id="tauxPret" value="3.65" step="0.05" class="w-full bg-zinc-950/80 text-zinc-200 border border-zinc-800 rounded-lg p-2.5 focus:border-gold-500 focus:outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="text-zinc-400 block mb-1">Durée prêt (années)</label>
+                                <input type="number" id="dureePret" value="25" class="w-full bg-zinc-950/80 text-zinc-200 border border-zinc-800 rounded-lg p-2.5 focus:border-gold-500 focus:outline-none font-medium">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-zinc-400 block mb-1">Taxe Foncière (€/an)</label>
+                                <input type="number" id="taxeFonciere" value="1200" class="w-full bg-zinc-950/80 text-zinc-200 border border-zinc-800 rounded-lg p-2.5 focus:border-gold-500 focus:outline-none font-medium">
+                            </div>
+                            <div>
+                                <label class="text-zinc-400 block mb-1">Co-pro / Assur. (€/mois)</label>
+                                <input type="number" id="chargesCopr" value="120" class="w-full bg-zinc-950/80 text-zinc-200 border border-zinc-800 rounded-lg p-2.5 focus:border-gold-500 focus:outline-none font-medium">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-zinc-400 block mb-1">Entretien travaux (%/an)</label>
+                                <input type="number" id="entretienImmo" value="0.8" step="0.1" class="w-full bg-zinc-950/80 text-zinc-200 border border-zinc-800 rounded-lg p-2.5 focus:border-gold-500 focus:outline-none font-medium text-amber-300">
+                            </div>
+                            <div>
+                                <label class="text-zinc-400 block mb-1">Valorisation bien (%/an)</label>
+                                <input type="number" id="appreciationImmo" value="1.8" step="0.1" class="w-full bg-zinc-950/80 text-zinc-200 border border-zinc-800 rounded-lg p-2.5 focus:border-gold-500 focus:outline-none font-medium text-emerald-400">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-zinc-400 block mb-1">Commission de revente (%)</label>
+                            <input type="number" id="fraisRevente" value="5" step="0.5" class="w-full bg-zinc-950/80 text-zinc-200 border border-zinc-800 rounded-lg p-2.5 focus:border-gold-500 focus:outline-none font-medium">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION LOCATION & EPARGNE -->
+                <div class="glass-card rounded-2xl p-5 border-l-4 border-l-zinc-500">
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-zinc-800">
+                        <h3 class="text-sm font-bold uppercase tracking-wider text-zinc-400">Section Locataire</h3>
+                        <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    </div>
+                    
+                    <div class="space-y-4 text-xs">
+                        <div>
+                            <label class="text-zinc-400 block mb-1">Loyer initial HC (€/mois)</label>
+                            <input type="number" id="loyer" value="950" class="w-full bg-zinc-950/80 text-zinc-200 border border-zinc-800 rounded-lg p-2.5 focus:border-gold-500 focus:outline-none font-medium">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-zinc-400 block mb-1">Inflation Loyers (%/an)</label>
+                                <input type="number" id="inflationLoyers" value="2.2" step="0.1" class="w-full bg-zinc-950/80 text-zinc-200 border border-zinc-800 rounded-lg p-2.5 focus:border-gold-500 focus:outline-none font-medium text-amber-500">
+                            </div>
+                            <div>
+                                <label class="text-zinc-400 block mb-1">Rendement Épargne (%/an)</label>
+                                <input type="number" id="rendementEpargne" value="4.0" step="0.1" class="w-full bg-zinc-950/80 text-zinc-200 border border-zinc-800 rounded-lg p-2.5 focus:border-gold-500 focus:outline-none font-medium text-emerald-400">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-zinc-400 block mb-1">Fiscalité sur les gains d'épargne (%)</label>
+                            <div class="flex items-center gap-2">
+                                <input type="number" id="fiscaliteEpargne" value="30" step="1" class="w-1/2 bg-zinc-950/80 text-zinc-200 border border-zinc-800 rounded-lg p-2.5 focus:border-gold-500 focus:outline-none font-medium">
+                                <span class="text-[10px] text-zinc-500 w-1/2 leading-tight">Flat tax française (PFU) = 30%. PEA après 5 ans = 17.2%.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DUREE DE LA SIMULATION -->
+                <div class="glass-card rounded-2xl p-5 border-l-4 border-l-amber-600">
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="text-xs font-bold uppercase tracking-wider text-zinc-400">Horizon d'Arbitrage</label>
+                        <span id="labelAnnees" class="text-xs font-bold text-gold-400 bg-gold-950/60 border border-gold-800/50 rounded-full px-2.5 py-0.5">25 ans</span>
+                    </div>
+                    <input type="range" id="anneesSimulation" min="5" max="40" value="25" class="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-gold-500">
+                </div>
+            </aside>
+
+            <!-- CONTENU DE DROITE : KPIs & GRAPH (8 cols) -->
+            <main class="lg:col-span-8 flex flex-col gap-6">
+                
+                <!-- ZONE BREAK-EVEN / INSIGHT -->
+                <div id="breakEvenBanner" class="gold-border-glow bg-gradient-to-r from-zinc-950 via-gold-950/20 to-zinc-950 rounded-2xl p-6 relative overflow-hidden flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="absolute -right-20 -bottom-20 w-44 h-44 bg-gold-500/10 blur-3xl rounded-full"></div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold tracking-widest text-gold-500 bg-gold-950/60 border border-gold-800 px-2 py-0.5 rounded-full">Seuil de rentabilité</span>
+                        <h2 class="text-lg font-bold text-zinc-100 mt-2" id="breakEvenTitle">Calcul de l'équilibre...</h2>
+                        <p class="text-xs text-zinc-400 mt-1 leading-relaxed" id="breakEvenDesc">Examen des courbes d'actifs nets comparés.</p>
+                    </div>
+                    <div class="bg-zinc-900/90 border border-zinc-800 px-5 py-3 rounded-xl flex flex-col items-center justify-center min-w-[130px] shadow-lg">
+                        <span class="text-[10px] text-zinc-500 uppercase font-semibold">Bascule à</span>
+                        <span id="breakEvenBadge" class="text-2xl font-black text-gold-400">-</span>
+                    </div>
+                </div>
+
+                <!-- GRILLE DE KPI -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- ACHAT RESULT CARD -->
+                    <div class="glass-card rounded-2xl p-5 border border-emerald-950/40 relative">
+                        <div class="absolute top-4 right-4 text-emerald-500/20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+                        <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Patrimoine net de l'acheteur</span>
+                        <div id="patrimoineAchat" class="text-2xl font-black mt-2 text-zinc-100">0 €</div>
+                        <p class="text-[11px] text-zinc-400 mt-1">Valeur du bien minorée de la revente, du prêt restant et épargne accumulée.</p>
+                        
+                        <div class="mt-4 pt-3 border-t border-zinc-800/80 flex justify-between text-xs text-zinc-500">
+                            <span>Mensualité Prêt (hors charges) :</span>
+                            <span id="mensPretCalcul" class="font-bold text-zinc-300">0 €</span>
+                        </div>
+                        <div class="mt-2 flex justify-between text-xs text-zinc-500">
+                            <span>Charges + TF + Entretien initial :</span>
+                            <span id="budgetMoisProprio" class="font-bold text-zinc-300">0 €/mois</span>
+                        </div>
+                    </div>
+
+                    <!-- LOCATION RESULT CARD -->
+                    <div class="glass-card rounded-2xl p-5 border border-blue-950/40 relative">
+                        <div class="absolute top-4 right-4 text-blue-500/20"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+                        <span class="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Patrimoine net du locataire</span>
+                        <div id="patrimoineLocation" class="text-2xl font-black mt-2 text-zinc-100">0 €</div>
+                        <p class="text-[11px] text-zinc-400 mt-1">Montant généré par le placement net de l'apport initial et de l'effort d'épargne.</p>
+
+                        <div class="mt-4 pt-3 border-t border-zinc-800/80 flex justify-between text-xs text-zinc-500">
+                            <span>Loyer d'amorçage :</span>
+                            <span id="loyerInitialAff" class="font-bold text-zinc-300">0 €/mois</span>
+                        </div>
+                        <div class="mt-2 flex justify-between text-xs text-zinc-500">
+                            <span>Loyer projeté horizon final :</span>
+                            <span id="loyerFinalAff" class="font-bold text-zinc-300">0 €/mois</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- GRAPHIQUE -->
+                <div class="glass-card rounded-2xl p-5 flex flex-col">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="text-xs font-bold uppercase text-zinc-400 tracking-wider">Évolution comparative des actifs nets de sortie</h4>
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-gold-500"></span>Achat</span>
+                            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-zinc-500"></span>Location</span>
+                        </div>
+                    </div>
+                    <div class="h-80 md:h-96 w-full">
+                        <canvas id="patrimoineChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- TABLEAU D'AUDIT TECHNIQUE -->
+                <div class="glass-card rounded-2xl overflow-hidden">
+                    <button onclick="toggleAuditTable()" class="w-full px-5 py-4 flex items-center justify-between hover:bg-zinc-900/40 transition-colors text-left focus:outline-none">
+                        <span class="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            Tableau d'audit financier année par année
+                        </span>
+                        <svg id="auditArrow" class="w-4 h-4 text-zinc-500 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    
+                    <div id="auditContainer" class="hidden border-t border-zinc-900 overflow-x-auto max-h-[350px]">
+                        <table class="w-full text-left text-[11px] text-zinc-400 min-w-[700px]">
+                            <thead class="bg-zinc-950/80 sticky top-0 border-b border-zinc-900 text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
+                                <tr>
+                                    <th class="p-3">Année</th>
+                                    <th class="p-3">Valeur Bien (€)</th>
+                                    <th class="p-3">Dette Restante (€)</th>
+                                    <th class="p-3">Loyer Courant (€)</th>
+                                    <th class="p-3">Mens. Proprio (€)</th>
+                                    <th class="p-3">Patr. Net Achat (€)</th>
+                                    <th class="p-3">Patr. Net Location (€)</th>
+                                    <th class="p-3">Arbitrage Net</th>
+                                </tr>
+                            </thead>
+                            <tbody id="auditTableBody" class="divide-y divide-zinc-900/40">
+                                <!-- Rempli dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </main>
         </div>
 
-        <div class="flex-1 p-6 md:p-10 flex flex-col">
-            <h1 class="text-3xl font-black text-slate-900 mb-6 uppercase">Comparaison Achat immobilier / Location</h1>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-                <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100 flex flex-col justify-between">
-                    <div>
-                        <h4 class="text-blue-900 font-bold text-sm uppercase tracking-wide mb-4">Coût Mensuel (Année 1)</h4>
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-slate-600">Propriétaire</span>
-                            <span id="coutMensuelProprio" class="font-bold text-slate-900 text-lg no-wrap">0 €</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-slate-600">Locataire</span>
-                            <span id="coutMensuelLocataire" class="font-bold text-slate-900 text-lg no-wrap">0 €</span>
-                        </div>
-                    </div>
-                    <p id="phraseEpargne" class="mt-4 text-xs text-blue-700 leading-relaxed italic border-t border-blue-200 pt-3"></p>
-                </div>
-
-                <div class="bg-slate-900 p-6 rounded-2xl text-white shadow-xl flex flex-col justify-between">
-                    <div>
-                        <h4 class="text-slate-400 font-bold text-sm uppercase tracking-wide mb-4">Patrimoine brut final</h4>
-                        <div class="flex justify-between items-end mb-3">
-                            <span class="text-slate-300 text-sm">Achat</span>
-                            <span id="patrimoineAchat" class="font-black text-emerald-400 text-2xl no-wrap">0 €</span>
-                        </div>
-                        <div class="flex justify-between items-end mb-4">
-                            <span class="text-slate-300 text-sm">Location</span>
-                            <span id="patrimoineLocation" class="font-black text-blue-400 text-2xl no-wrap">0 €</span>
-                        </div>
-                    </div>
-                    <div class="bg-white/10 rounded-lg p-3 text-center">
-                        <span id="ecartPourcentage" class="text-sm font-bold"></span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex-grow min-h-[350px]">
-                <canvas id="patrimoineChart"></canvas>
-            </div>
-        </div>
+        <!-- FOOTER -->
+        <footer class="mt-12 text-center text-zinc-600 text-xs py-6 border-t border-zinc-900">
+            <p>ImmoSIM est optimisé pour les arbitrages d'opportunité en France métropolitaine.</p>
+            <p class="mt-2 text-[10px] text-zinc-700">Calculateur d'arbitrage de flux de trésorerie nette - Licence MIT - GitHub Pages active</p>
+        </footer>
     </div>
 
+    <!-- CODE APPLICATIF SCRIPT -->
     <script>
         let myChart = null;
 
+        // Éléments du DOM
+        const anneesSimulationInput = document.getElementById('anneesSimulation');
+        const labelAnnees = document.getElementById('labelAnnees');
+
+        // Toggle du tableau d'audit
+        function toggleAuditTable() {
+            const container = document.getElementById('auditContainer');
+            const arrow = document.getElementById('auditArrow');
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                arrow.classList.add('rotate-180');
+            } else {
+                container.classList.add('hidden');
+                arrow.classList.remove('rotate-180');
+            }
+        }
+
+        // Sauvegarde localStorage
+        function sauvegarderParametres() {
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                localStorage.setItem('immosim_v2_' + input.id, input.value);
+            });
+        }
+
+        // Chargement localStorage
+        function chargerParametres() {
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                const saved = localStorage.getItem('immosim_v2_' + input.id);
+                if (saved !== null) {
+                    input.value = saved;
+                }
+            });
+            // Update le label de l'input range
+            labelAnnees.textContent = anneesSimulationInput.value + " ans";
+        }
+
+        // Calculs Financiers Rigoureux
         function calculer() {
-            // Inputs
-            const prixBienBase = parseFloat(document.getElementById('prixBien').value);
-            const apport = parseFloat(document.getElementById('apport').value);
-            const tauxPret = parseFloat(document.getElementById('tauxPret').value) / 100;
-            const dureePret = parseInt(document.getElementById('dureePret').value);
-            const appreciationImmo = parseFloat(document.getElementById('appreciationImmo').value) / 100;
-            
-            const loyerBase = parseFloat(document.getElementById('loyer').value);
-            const inflationLoyers = parseFloat(document.getElementById('inflationLoyers').value) / 100;
-            const rendementEpargne = parseFloat(document.getElementById('rendementEpargne').value) / 100;
-            const anneesSimulation = parseInt(document.getElementById('anneesSimulation').value);
+            // Lecture des paramètres
+            const prixBienBase = parseFloat(document.getElementById('prixBien').value) || 0;
+            const apport = parseFloat(document.getElementById('apport').value) || 0;
+            const tauxPret = (parseFloat(document.getElementById('tauxPret').value) || 0) / 100;
+            const dureePret = parseInt(document.getElementById('dureePret').value) || 20;
+            const fraisNotairePct = (parseFloat(document.getElementById('fraisNotairePct').value) || 0) / 100;
+            const appreciationImmo = (parseFloat(document.getElementById('appreciationImmo').value) || 0) / 100;
+            const entretienImmo = (parseFloat(document.getElementById('entretienImmo').value) || 0) / 100;
+            const taxeFonciere = parseFloat(document.getElementById('taxeFonciere').value) || 0;
+            const chargesCopr = parseFloat(document.getElementById('chargesCopr').value) || 0;
+            const fraisRevente = (parseFloat(document.getElementById('fraisRevente').value) || 0) / 100;
 
-            // Hypothèses fixes
-            const fraisNotaire = prixBienBase * 0.08;
-            const fraisAnnuelsProprioBase = 2000; // Taxe foncière + charges
+            const loyerBase = parseFloat(document.getElementById('loyer').value) || 0;
+            const inflationLoyers = (parseFloat(document.getElementById('inflationLoyers').value) || 0) / 100;
+            const rendementEpargne = (parseFloat(document.getElementById('rendementEpargne').value) || 0) / 100;
+            const fiscaliteEpargne = (parseFloat(document.getElementById('fiscaliteEpargne').value) || 0) / 100;
+            const anneesSimulation = parseInt(anneesSimulationInput.value) || 25;
 
-            // Calcul Prêt
-            const montantEmprunte = (prixBienBase + fraisNotaire) - apport;
+            // 1. Calcul du Prêt
+            const fraisNotaire = prixBienBase * fraisNotairePct;
+            const montantEmprunte = Math.max(0, (prixBienBase + fraisNotaire) - apport);
             const tauxMensuel = tauxPret / 12;
             const nbMoisPret = dureePret * 12;
-            let mensPret = (tauxPret > 0) ? (montantEmprunte * tauxMensuel) / (1 - Math.pow(1 + tauxMensuel, -nbMoisPret)) : montantEmprunte / nbMoisPret;
+            
+            let mensPret = 0;
+            if (montantEmprunte > 0) {
+                mensPret = (tauxPret > 0) 
+                    ? (montantEmprunte * tauxMensuel) / (1 - Math.pow(1 + tauxMensuel, -nbMoisPret)) 
+                    : montantEmprunte / nbMoisPret;
+            }
 
-            // Stats Année 1
-            document.getElementById('coutMensuelProprio').textContent = Math.round(mensPret + (fraisAnnuelsProprioBase/12)).toLocaleString() + ' €';
-            document.getElementById('coutMensuelLocataire').textContent = Math.round(loyerBase).toLocaleString() + ' €';
+            // Rendement net d'impôt de l'épargne du locataire/acheteur
+            const rendementEpargneNetAnnuel = rendementEpargne * (1 - fiscaliteEpargne);
+            const rendementEpargneNetMensuel = rendementEpargneNetAnnuel / 12;
 
-            // Boucle de simulation
+            // Variables de simulation
+            let capitalRestantDu = montantEmprunte;
+            let epargneLocataire = apport; // Le locataire place son apport initial non-consommé par le notaire
+            let epargneProprio = 0;        // L'acheteur a épuisé son apport dans la transaction immobilière
+
+            let valeurBienActuelle = prixBienBase;
+            let loyerActuel = loyerBase;
+            let chargesMensProprio = chargesCopr;
+            let taxeFonciereMens = taxeFonciere / 12;
+
             const labels = [];
             const dataAchat = [];
             const dataLocation = [];
+            const auditData = [];
 
-            let capitalRestantDu = montantEmprunte;
-            let epargneLocataire = apport; 
-            let epargneProprio = 0;
-            let valeurBienActuelle = prixBienBase;
-            let loyerActuel = loyerBase;
-            let fraisProprioActuel = fraisAnnuelsProprioBase / 12;
+            // Année 0 (Conséquence instantanée de la transaction)
+            labels.push('An 0');
+            
+            // Le propriétaire démarre avec le bien et la dette, et des frais de revente déduits
+            const fraisReventeInitial = valeurBienActuelle * fraisRevente;
+            const patAchatAn0 = valeurBienActuelle - capitalRestantDu + epargneProprio - fraisReventeInitial;
+            dataAchat.push(Math.round(patAchatAn0));
+            
+            const patLocAn0 = epargneLocataire;
+            dataLocation.push(Math.round(patLocAn0));
 
-            for (let annee = 0; annee <= anneesSimulation; annee++) {
+            auditData.push({
+                annee: 0,
+                valeurBien: Math.round(valeurBienActuelle),
+                capitalDette: Math.round(capitalRestantDu),
+                loyer: Math.round(loyerActuel),
+                coutMensProprio: Math.round((dureePret > 0 ? mensPret : 0) + chargesMensProprio + taxeFonciereMens + (valeurBienActuelle * entretienImmo / 12)),
+                patAchat: Math.round(patAchatAn0),
+                patLoc: Math.round(patLocAn0)
+            });
+
+            // Boucle Annuelle
+            for (let annee = 1; annee <= anneesSimulation; annee++) {
                 labels.push('An ' + annee);
 
-                if (annee === 0) {
-                    dataAchat.push(prixBienBase - montantEmprunte);
-                    dataLocation.push(apport);
-                    continue;
-                }
+                // 1. Indexation annuelle (appliquée une fois en début d'année)
+                valeurBienActuelle *= (1 + appreciationImmo);
+                loyerActuel *= (1 + inflationLoyers);
+                chargesMensProprio *= (1 + inflationLoyers);
+                taxeFonciereMens *= (1 + inflationLoyers);
 
-                // Simulation mois par mois
+                // Variables de cumul mensuel sur l'année en cours
+                let coutMensMoyenAcheteur = 0;
+
+                // 2. Traitement mensuel pour la gestion du crédit et de l'épargne opportuniste
                 for (let m = 1; m <= 12; m++) {
-                    // 1. Inflation et Appréciation (mensualisée)
-                    valeurBienActuelle *= (1 + appreciationImmo/12);
-                    loyerActuel *= (1 + inflationLoyers/12);
-                    fraisProprioActuel *= (1 + inflationLoyers/12); // Les charges montent aussi
-
-                    // 2. Coûts du mois
-                    let coutP = fraisProprioActuel;
-                    if ( (annee-1)*12 + m <= nbMoisPret ) {
-                        coutP += mensPret;
-                        let interets = capitalRestantDu * tauxMensuel;
-                        capitalRestantDu -= (mensPret - interets);
+                    const indexMoisSimulation = (annee - 1) * 12 + m;
+                    
+                    // Provision travaux mensuelle ajustée à la valeur actuelle du bien
+                    const fraisEntretienMens = (valeurBienActuelle * entretienImmo) / 12;
+                    
+                    // Calcul des dépenses mensuelles réelles du propriétaire
+                    let coutMensAcheteur = chargesMensProprio + taxeFonciereMens + fraisEntretienMens;
+                    
+                    if (indexMoisSimulation <= nbMoisPret) {
+                        coutMensAcheteur += mensPret;
+                        
+                        // Calcul des intérêts et amortissement
+                        const interetsDuMois = capitalRestantDu * tauxMensuel;
+                        const amortissementDuMois = Math.min(capitalRestantDu, mensPret - interetsDuMois);
+                        capitalRestantDu -= amortissementDuMois;
                     }
+                    
+                    coutMensMoyenAcheteur += coutMensAcheteur;
 
-                    // 3. Épargne
-                    epargneLocataire *= (1 + rendementEpargne/12);
-                    epargneProprio *= (1 + rendementEpargne/12);
+                    // Croissance mensuelle de l'épargne acquise (gains réinvestis nets)
+                    epargneLocataire *= (1 + rendementEpargneNetMensuel);
+                    epargneProprio *= (1 + rendementEpargneNetMensuel);
 
-                    if (coutP > loyerActuel) {
-                        epargneLocataire += (coutP - loyerActuel);
+                    // Arbitrage de l'effort financier (Épargne opportuniste de trésorerie)
+                    if (coutMensAcheteur > loyerActuel) {
+                        // Le propriétaire paye plus que le locataire : le locataire épargne l'excédent
+                        epargneLocataire += (coutMensAcheteur - loyerActuel);
                     } else {
-                        epargneProprio += (loyerActuel - coutP);
+                        // Le locataire paye un loyer supérieur au coût de l'achat : le propriétaire épargne la différence
+                        epargneProprio += (loyerActuel - coutMensAcheteur);
                     }
                 }
 
-                dataAchat.push(Math.round(valeurBienActuelle - Math.max(0, capitalRestantDu) + epargneProprio));
-                dataLocation.push(Math.round(epargneLocataire));
+                // 3. Synthèse annuelle & Valorisation finale de l'actif net
+                // Déduction systématique de la commission de revente sur le prix du marché
+                const coutsDeCession = valeurBienActuelle * fraisRevente;
+                const patrimoineNetAcheteur = valeurBienActuelle - Math.max(0, capitalRestantDu) + epargneProprio - coutsDeCession;
+                const patrimoineNetLocataire = epargneLocataire;
+
+                dataAchat.push(Math.round(patrimoineNetAcheteur));
+                dataLocation.push(Math.round(patrimoineNetLocataire));
+
+                auditData.push({
+                    annee: annee,
+                    valeurBien: Math.round(valeurBienActuelle),
+                    capitalDette: Math.round(capitalRestantDu),
+                    loyer: Math.round(loyerActuel),
+                    coutMensProprio: Math.round(coutMensMoyenAcheteur / 12),
+                    patAchat: Math.round(patrimoineNetAcheteur),
+                    patLoc: Math.round(patrimoineNetLocataire)
+                });
             }
 
-            // Affichage Final
+            // Restitution des indicateurs sur l'interface
             const finalAchat = dataAchat[dataAchat.length - 1];
             const finalLoc = dataLocation[dataLocation.length - 1];
-            document.getElementById('patrimoineAchat').textContent = finalAchat.toLocaleString() + ' €';
-            document.getElementById('patrimoineLocation').textContent = finalLoc.toLocaleString() + ' €';
 
-            // Calcul %
-            const diff = finalAchat - finalLoc;
-            const pct = (diff / finalLoc) * 100;
-            const indicator = document.getElementById('ecartPourcentage');
-            indicator.textContent = (pct >= 0) ? `+${pct.toFixed(1)}% en faveur de l'achat` : `${pct.toFixed(1)}% en faveur de la location`;
-            indicator.className = (pct >= 0) ? "text-emerald-400 font-bold" : "text-orange-400 font-bold";
+            document.getElementById('patrimoineAchat').textContent = finalAchat.toLocaleString('fr-FR') + ' €';
+            document.getElementById('patrimoineLocation').textContent = finalLoc.toLocaleString('fr-FR') + ' €';
+            
+            document.getElementById('mensPretCalcul').textContent = Math.round(mensPret).toLocaleString('fr-FR') + ' €';
+            
+            const budgetInitProprio = (nbMoisPret > 0 ? mensPret : 0) + (chargesCopr) + (taxeFonciere / 12) + ((prixBienBase * entretienImmo) / 12);
+            document.getElementById('budgetMoisProprio').textContent = Math.round(budgetInitProprio).toLocaleString('fr-FR') + ' €';
+            
+            document.getElementById('loyerInitialAff').textContent = Math.round(loyerBase).toLocaleString('fr-FR') + ' €';
+            document.getElementById('loyerFinalAff').textContent = Math.round(loyerActuel).toLocaleString('fr-FR') + ' €';
 
-            document.getElementById('phraseEpargne').innerHTML = `L'inflation des loyers (${(inflationLoyers*100).toFixed(1)}%) et l'appréciation du bien (${(appreciationImmo*100).toFixed(1)}%) sont incluses dans le calcul mois par mois.`;
+            // Analyse du Point d'Équilibre (Break-Even)
+            let anneeBascule = -1;
+            for (let i = 0; i < dataAchat.length; i++) {
+                if (dataAchat[i] > dataLocation[i]) {
+                    anneeBascule = i;
+                    break;
+                }
+            }
+
+            const breakEvenTitle = document.getElementById('breakEvenTitle');
+            const breakEvenDesc = document.getElementById('breakEvenDesc');
+            const breakEvenBadge = document.getElementById('breakEvenBadge');
+            const breakEvenBanner = document.getElementById('breakEvenBanner');
+
+            if (anneeBascule === -1) {
+                breakEvenTitle.textContent = "La location reste financièrement supérieure";
+                breakEvenDesc.textContent = `Sur votre horizon de ${anneesSimulation} ans, l'achat ne parvient pas à compenser les frais de transaction, de détention et la capitalisation de l'épargne.`;
+                breakEvenBadge.textContent = "Jamais";
+                breakEvenBadge.className = "text-2xl font-black text-rose-500";
+                breakEvenBanner.style.borderColor = "rgba(244, 63, 94, 0.2)";
+            } else if (anneeBascule === 0) {
+                breakEvenTitle.textContent = "L'achat est immédiatement rentable";
+                breakEvenDesc.textContent = "Les conditions d'apport, de faibles coûts d'emprunt ou de loyers élevés avantagent instantanément la propriété.";
+                breakEvenBadge.textContent = "Immédiat";
+                breakEvenBadge.className = "text-xl font-black text-emerald-400";
+                breakEvenBanner.style.borderColor = "rgba(52, 211, 153, 0.2)";
+            } else {
+                breakEvenTitle.textContent = `L'achat surpasse la location à partir de l'an ${anneeBascule}`;
+                const diffPatrimoine = Math.abs(finalAchat - finalLoc);
+                breakEvenDesc.textContent = `En restant propriétaire au moins ${anneeBascule} ans, vous amortissez les frais de notaire. À ${anneesSimulation} ans, l'écart d'actif net est de ${diffPatrimoine.toLocaleString('fr-FR')} € en faveur de ${finalAchat > finalLoc ? 'l\'achat' : 'la location'}.`;
+                breakEvenBadge.textContent = `${anneeBascule} ans`;
+                breakEvenBadge.className = "text-2xl font-black text-gold-400";
+                breakEvenBanner.style.borderColor = "rgba(212, 175, 55, 0.2)";
+            }
+
+            // Génération dynamique du tableau d'audit
+            const tableBody = document.getElementById('auditTableBody');
+            tableBody.innerHTML = '';
+            auditData.forEach(row => {
+                const isAchatSuperieur = row.patAchat > row.patLoc;
+                const diff = Math.abs(row.patAchat - row.patLoc);
+                const isAnneeBascule = (row.annee === anneeBascule);
+
+                const tr = document.createElement('tr');
+                tr.className = `hover:bg-zinc-900/30 transition-colors ${isAnneeBascule ? 'bg-gold-500/10 font-bold border-y border-gold-500/30' : ''}`;
+                tr.innerHTML = `
+                    <td class="p-3 text-zinc-300 font-semibold">${row.annee === 0 ? 'Initiale' : 'An ' + row.annee}</td>
+                    <td class="p-3">${row.valeurBien.toLocaleString('fr-FR')} €</td>
+                    <td class="p-3 text-zinc-500">${row.capitalDette.toLocaleString('fr-FR')} €</td>
+                    <td class="p-3">${row.loyer.toLocaleString('fr-FR')} €</td>
+                    <td class="p-3">${row.coutMensProprio.toLocaleString('fr-FR')} €</td>
+                    <td class="p-3 text-emerald-500 font-medium">${row.patAchat.toLocaleString('fr-FR')} €</td>
+                    <td class="p-3 text-blue-400 font-medium">${row.patLoc.toLocaleString('fr-FR')} €</td>
+                    <td class="p-3 font-semibold ${isAchatSuperieur ? 'text-emerald-400' : 'text-zinc-500'}">
+                        ${isAchatSuperieur ? '+' : '-'}${diff.toLocaleString('fr-FR')} €
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
 
             updateChart(labels, dataAchat, dataLocation);
         }
 
+        // Configuration de Chart.js
         function updateChart(labels, dataAchat, dataLocation) {
             const ctx = document.getElementById('patrimoineChart').getContext('2d');
             if (myChart) myChart.destroy();
+            
             myChart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'Achat', data: dataAchat, borderColor: '#10b981', borderWidth: 4, pointRadius: 0, tension: 0.3, fill: false },
-                        { label: 'Location', data: dataLocation, borderColor: '#3b82f6', borderWidth: 4, pointRadius: 0, tension: 0.3, fill: false }
+                        { 
+                            label: 'Achat (Patrimoine Net)', 
+                            data: dataAchat, 
+                            borderColor: '#d4af37', // Or Métallique
+                            borderWidth: 3, 
+                            pointRadius: 2,
+                            pointBackgroundColor: '#d4af37',
+                            tension: 0.25, 
+                            fill: false 
+                        },
+                        { 
+                            label: 'Location (Épargne Nets)', 
+                            data: dataLocation, 
+                            borderColor: '#71717a', // Zinc
+                            borderWidth: 2, 
+                            pointRadius: 0,
+                            borderDash: [5, 5],
+                            tension: 0.25, 
+                            fill: false 
+                        }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: { 
+                        legend: { 
+                            display: false 
+                        },
+                        tooltip: {
+                            backgroundColor: '#09090b',
+                            titleColor: '#d4af37',
+                            bodyColor: '#e4e4e7',
+                            borderColor: '#27272a',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return ' ' + context.dataset.label.split(' ')[0] + ' : ' + context.parsed.y.toLocaleString('fr-FR') + ' €';
+                                }
+                            }
+                        }
+                    },
                     scales: {
-                        y: { grid: { color: '#f1f5f9' }, ticks: { callback: v => v.toLocaleString() + ' €' } },
-                        x: { grid: { display: false } }
+                        y: { 
+                            grid: { color: '#18181b' }, 
+                            ticks: { 
+                                color: '#a1a1aa',
+                                callback: v => v.toLocaleString('fr-FR') + ' €' 
+                            } 
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: '#a1a1aa' }
+                        }
                     }
                 }
             });
         }
 
-        document.querySelectorAll('input').forEach(i => i.addEventListener('input', calculer));
-        calculer();
+        // Écouteurs de modification
+        document.querySelectorAll('input, select').forEach(i => {
+            i.addEventListener('input', () => {
+                if (i.id === 'anneesSimulation') {
+                    labelAnnees.textContent = i.value + " ans";
+                }
+                sauvegarderParametres();
+                calculer();
+            });
+        });
+
+        // Initialisation
+        window.onload = function() {
+            chargerParametres();
+            calculer();
+        };
     </script>
 </body>
 </html>
