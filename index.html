@@ -49,7 +49,8 @@
         /* Gold metallic text styling */
         .text-gold-gradient {
             background: linear-gradient(135deg, #fef08a 0%, #d4af37 50%, #ca8a04 100%);
-            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-background-clip: text;      
             -webkit-text-fill-color: transparent;
         }
 
@@ -137,6 +138,12 @@
                             </div>
                         </div>
 
+                        <!-- Montant Emprunté Dynamique -->
+                        <div class="bg-zinc-950/50 border border-zinc-900 rounded-xl p-3 flex justify-between items-center text-[11px] text-zinc-400">
+                            <span>Financement requis (Emprunt) :</span>
+                            <span id="empruntRequisAff" class="font-bold text-gold-400">0 €</span>
+                        </div>
+
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="text-zinc-400 block mb-1">Taux emprunt (% d'intérêt)</label>
@@ -150,8 +157,8 @@
 
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="text-zinc-400 block mb-1">Taxe Foncière (€/an)</label>
-                                <input type="number" id="taxeFonciere" value="1200" class="w-full bg-zinc-950/80 text-zinc-200 border border-zinc-800 rounded-lg p-2.5 focus:border-gold-500 focus:outline-none font-medium">
+                                <label class="text-zinc-400 block mb-1">Taxe Foncière (€/an) <span class="text-[9px] text-zinc-500">(est. 0.55%)</span></label>
+                                <input type="number" id="taxeFonciere" value="1210" class="w-full bg-zinc-950/80 text-zinc-200 border border-zinc-800 rounded-lg p-2.5 focus:border-gold-500 focus:outline-none font-medium">
                             </div>
                             <div>
                                 <label class="text-zinc-400 block mb-1">Co-pro / Assur. (€/mois)</label>
@@ -161,8 +168,8 @@
 
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="text-zinc-400 block mb-1">Entretien travaux (%/an)</label>
-                                <input type="number" id="entretienImmo" value="0.8" step="0.1" class="w-full bg-zinc-950/80 text-zinc-200 border border-zinc-800 rounded-lg p-2.5 focus:border-gold-500 focus:outline-none font-medium text-amber-300">
+                                <label class="text-zinc-400 block mb-1">Entretien travaux (€/an)</label>
+                                <input type="number" id="entretienImmo" value="1500" step="100" class="w-full bg-zinc-950/80 text-zinc-200 border border-zinc-800 rounded-lg p-2.5 focus:border-gold-500 focus:outline-none font-medium text-amber-300">
                             </div>
                             <div>
                                 <label class="text-zinc-400 block mb-1">Valorisation bien (%/an)</label>
@@ -324,15 +331,16 @@
         </div>
 
         <!-- FOOTER -->
-        <footer class="mt-12 text-center text-zinc-600 text-xs py-6 border-t border-zinc-900">
+        <footer class="mt-12 text-center text-zinc-500 text-xs py-6 border-t border-zinc-900">
             <p>ImmoSIM est optimisé pour les arbitrages d'opportunité en France métropolitaine.</p>
-            <p class="mt-2 text-[10px] text-zinc-700">Calculateur d'arbitrage de flux de trésorerie nette - Licence MIT - GitHub Pages active</p>
+            <p class="mt-2 text-[10px] text-zinc-500">Calculateur d'arbitrage de flux de trésorerie nette - Licence MIT - GitHub Pages active</p>
         </footer>
     </div>
 
     <!-- CODE APPLICATIF SCRIPT -->
     <script>
         let myChart = null;
+        let manualTaxeFonciere = false;
 
         // Éléments du DOM
         const anneesSimulationInput = document.getElementById('anneesSimulation');
@@ -357,6 +365,7 @@
             inputs.forEach(input => {
                 localStorage.setItem('immosim_v2_' + input.id, input.value);
             });
+            localStorage.setItem('immosim_manual_tf', manualTaxeFonciere ? 'true' : 'false');
         }
 
         // Chargement localStorage
@@ -368,6 +377,7 @@
                     input.value = saved;
                 }
             });
+            manualTaxeFonciere = localStorage.getItem('immosim_manual_tf') === 'true';
             // Update le label de l'input range
             labelAnnees.textContent = anneesSimulationInput.value + " ans";
         }
@@ -381,7 +391,10 @@
             const dureePret = parseInt(document.getElementById('dureePret').value) || 20;
             const fraisNotairePct = (parseFloat(document.getElementById('fraisNotairePct').value) || 0) / 100;
             const appreciationImmo = (parseFloat(document.getElementById('appreciationImmo').value) || 0) / 100;
-            const entretienImmo = (parseFloat(document.getElementById('entretienImmo').value) || 0) / 100;
+            
+            // Entretien travaux en € par an
+            const entretienImmoBase = parseFloat(document.getElementById('entretienImmo').value) || 0;
+            
             const taxeFonciere = parseFloat(document.getElementById('taxeFonciere').value) || 0;
             const chargesCopr = parseFloat(document.getElementById('chargesCopr').value) || 0;
             const fraisRevente = (parseFloat(document.getElementById('fraisRevente').value) || 0) / 100;
@@ -395,6 +408,10 @@
             // 1. Calcul du Prêt
             const fraisNotaire = prixBienBase * fraisNotairePct;
             const montantEmprunte = Math.max(0, (prixBienBase + fraisNotaire) - apport);
+            
+            // Mise à jour de l'affichage du financement requis
+            document.getElementById('empruntRequisAff').textContent = Math.round(montantEmprunte).toLocaleString('fr-FR') + ' €';
+
             const tauxMensuel = tauxPret / 12;
             const nbMoisPret = dureePret * 12;
             
@@ -418,6 +435,7 @@
             let loyerActuel = loyerBase;
             let chargesMensProprio = chargesCopr;
             let taxeFonciereMens = taxeFonciere / 12;
+            let entretienAnnuelCourant = entretienImmoBase;
 
             const labels = [];
             const dataAchat = [];
@@ -440,7 +458,7 @@
                 valeurBien: Math.round(valeurBienActuelle),
                 capitalDette: Math.round(capitalRestantDu),
                 loyer: Math.round(loyerActuel),
-                coutMensProprio: Math.round((dureePret > 0 ? mensPret : 0) + chargesMensProprio + taxeFonciereMens + (valeurBienActuelle * entretienImmo / 12)),
+                coutMensProprio: Math.round((dureePret > 0 ? mensPret : 0) + chargesMensProprio + taxeFonciereMens + (entretienAnnuelCourant / 12)),
                 patAchat: Math.round(patAchatAn0),
                 patLoc: Math.round(patLocAn0)
             });
@@ -454,6 +472,7 @@
                 loyerActuel *= (1 + inflationLoyers);
                 chargesMensProprio *= (1 + inflationLoyers);
                 taxeFonciereMens *= (1 + inflationLoyers);
+                entretienAnnuelCourant *= (1 + inflationLoyers); // Entretien indexé à l'inflation
 
                 // Variables de cumul mensuel sur l'année en cours
                 let coutMensMoyenAcheteur = 0;
@@ -462,8 +481,8 @@
                 for (let m = 1; m <= 12; m++) {
                     const indexMoisSimulation = (annee - 1) * 12 + m;
                     
-                    // Provision travaux mensuelle ajustée à la valeur actuelle du bien
-                    const fraisEntretienMens = (valeurBienActuelle * entretienImmo) / 12;
+                    // Provision travaux mensuelle fixe ramenée au mois
+                    const fraisEntretienMens = entretienAnnuelCourant / 12;
                     
                     // Calcul des dépenses mensuelles réelles du propriétaire
                     let coutMensAcheteur = chargesMensProprio + taxeFonciereMens + fraisEntretienMens;
@@ -522,7 +541,7 @@
             
             document.getElementById('mensPretCalcul').textContent = Math.round(mensPret).toLocaleString('fr-FR') + ' €';
             
-            const budgetInitProprio = (nbMoisPret > 0 ? mensPret : 0) + (chargesCopr) + (taxeFonciere / 12) + ((prixBienBase * entretienImmo) / 12);
+            const budgetInitProprio = (nbMoisPret > 0 ? mensPret : 0) + (chargesCopr) + (taxeFonciere / 12) + (entretienImmoBase / 12);
             document.getElementById('budgetMoisProprio').textContent = Math.round(budgetInitProprio).toLocaleString('fr-FR') + ' €';
             
             document.getElementById('loyerInitialAff').textContent = Math.round(loyerBase).toLocaleString('fr-FR') + ' €';
@@ -662,7 +681,23 @@
             });
         }
 
-        // Écouteurs de modification
+        // Gestion de la Taxe Foncière manuelle vs automatique (0.55% estimé)
+        const inputPrixBien = document.getElementById('prixBien');
+        const inputTaxeFonciere = document.getElementById('taxeFonciere');
+
+        inputTaxeFonciere.addEventListener('input', () => {
+            manualTaxeFonciere = true;
+        });
+
+        inputPrixBien.addEventListener('input', () => {
+            if (!manualTaxeFonciere) {
+                const prix = parseFloat(inputPrixBien.value) || 0;
+                // 0.55% de la valeur marchande par an de taxe foncière estimée
+                inputTaxeFonciere.value = Math.round(prix * 0.0055);
+            }
+        });
+
+        // Écouteurs de modification généraux
         document.querySelectorAll('input, select').forEach(i => {
             i.addEventListener('input', () => {
                 if (i.id === 'anneesSimulation') {
